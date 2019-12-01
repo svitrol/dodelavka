@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/barva"
+        android:title="Barva" />
+    <item
+        android:id="@+id/velikost"
+        android:title="Velikost" />
+    <item
+        android:id="@+id/text"
+        android:title="Text" />
+    <item
+        android:id="@+id/konec"
+        android:title="Konec" />
+</menu>
