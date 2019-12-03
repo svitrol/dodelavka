@@ -12,11 +12,14 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.json.JSONArray;
@@ -82,8 +85,8 @@ public class HttpHandler extends AsyncTask<String,Void,String> {
                 BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream,"UTF-8"));
                 String data = URLEncoder.encode("jmeno","UTF-8")+"="+URLEncoder.encode(login_name,"UTF-8")+"&"+
                         URLEncoder.encode("heslo","UTF-8")+"="+URLEncoder.encode(login_pass,"UTF-8")+"&"+
-                        URLEncoder.encode("hodnota","UTF-8")+"="+URLEncoder.encode("teplota","UTF-8")+"&"+
-                        URLEncoder.encode("od","UTF-8")+"="+URLEncoder.encode("2019-12-02 11:44:31","UTF-8")+"&"+
+                        URLEncoder.encode("hodnota","UTF-8")+"="+URLEncoder.encode("vlhkost","UTF-8")+"&"+
+                        URLEncoder.encode("od","UTF-8")+"="+URLEncoder.encode("2019-11-29 11:44:31","UTF-8")+"&"+
                         URLEncoder.encode("do","UTF-8")+"="+URLEncoder.encode("2019-12-02 16:44:31","UTF-8");
 
                 bufferedWriter.write(data);
@@ -126,14 +129,18 @@ public class HttpHandler extends AsyncTask<String,Void,String> {
             String[] housky=(pole[i]).split(",");
             /*Hodnota hodnotisk=new Hodnota(housky[0],housky[1],housky[2]);*/
             casy[i]=housky[2];
-            yValues.add(new Entry(i,(int)Double.parseDouble(housky[1])));
+            yValues.add(new Entry(i,Float.parseFloat(housky[1])));
         }
         for (String radek:pole) {
 
         }
         Graf.setDragEnabled(true);
-        Graf.setScaleEnabled(false);
-
+        Graf.setScaleEnabled(true);
+        Graf.setDragEnabled(true);
+        Graf.setPinchZoom(true);
+        XAxis osaX=Graf.getXAxis();
+        YAxis osaY=Graf.getAxisLeft();
+        osaY.setValueFormatter(new MyValueFormatter("vlhkost"));
 
         LineDataSet set1=new LineDataSet(yValues,"Dtata set 1");
         set1.setFillAlpha(110);
@@ -145,8 +152,11 @@ public class HttpHandler extends AsyncTask<String,Void,String> {
         dataSets.add(set1);
         LineData datovaLajna=new LineData(dataSets);
         Graf.setData(datovaLajna);
-        //XAxis osaX=Graf.getXAxis();
-        /*osaX.setValueFormatter(new FormatProOsu(casy));*/
+        osaX.setValueFormatter(new  MyXAxisFormatter(casy));
+        osaX.setLabelRotationAngle(15);
+        Graf.invalidate();
+
+
 
 
         // adding contact to contact list
@@ -169,5 +179,35 @@ public class HttpHandler extends AsyncTask<String,Void,String> {
 
 
     }*/
+    class MyXAxisFormatter extends ValueFormatter {
+        private String []pole;
+        public MyXAxisFormatter(String[] pole){
+            this.pole=pole;
+        }
+
+
+        @Override
+        public String getAxisLabel(float value, AxisBase axis) {
+            return pole[(int)value];
+        }
+    }
+    class MyValueFormatter extends ValueFormatter {
+        boolean Teplotu=true;
+        public MyValueFormatter(String hodnoty){
+            Teplotu=hodnoty.equals("teplota");
+        }
+
+        @Override
+        public String getAxisLabel(float value, AxisBase axis) {
+            if(Teplotu)return String.format("%1.2f°C",value);
+            return String.format("%1.0f%c",value,'%');
+        }
+
+       /* // override this for custom formatting of XAxis or YAxis labels
+        override fun getAxisLabel(value: Float, axis: AxisBase?): String {
+            return format.format(value)
+        }*/
+        // ... override other methods for the other chart types
+    }
 
 }

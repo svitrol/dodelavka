@@ -1,10 +1,13 @@
 package com.example.jsonreader;
 
+import android.arch.lifecycle.AndroidViewModel;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Window;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -45,6 +48,17 @@ public class MainActivity extends AppCompatActivity {
 
         rozjedTo=new HttpHandler(this, Graf);
         rozjedTo.execute("login");
+    }
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+            //getActionBar().hide();
+            //Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+        }
     }
 
 }
