@@ -3,12 +3,21 @@ package com.example.jsonreader;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
+
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,8 +34,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 
 
 /**
@@ -37,12 +50,14 @@ public class HttpHandler extends AsyncTask<String,Void,String> {
     AlertDialog alertDialog;
     Context ctx;
     private ListView lv;
+    LineChart Graf;
     ArrayList<HashMap<String, String>> contactList;
-    HttpHandler(Activity ctx)
+    HttpHandler(Activity ctx,LineChart graf)
     {
         this.ctx =ctx;
         contactList = new ArrayList<>();
-        lv =  ctx.findViewById(R.id.list);
+        Graf=graf;
+        //lv =  ctx.findViewById(R.id.list);
     }
     @Override
     protected void onPreExecute() {
@@ -67,8 +82,9 @@ public class HttpHandler extends AsyncTask<String,Void,String> {
                 BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream,"UTF-8"));
                 String data = URLEncoder.encode("jmeno","UTF-8")+"="+URLEncoder.encode(login_name,"UTF-8")+"&"+
                         URLEncoder.encode("heslo","UTF-8")+"="+URLEncoder.encode(login_pass,"UTF-8")+"&"+
-                        URLEncoder.encode("od","UTF-8")+"="+URLEncoder.encode("2019-11-28 22:00:00","UTF-8")+"&"+
-                        URLEncoder.encode("do","UTF-8")+"="+URLEncoder.encode("2019-11-28 23:05:37","UTF-8");
+                        URLEncoder.encode("hodnota","UTF-8")+"="+URLEncoder.encode("teplota","UTF-8")+"&"+
+                        URLEncoder.encode("od","UTF-8")+"="+URLEncoder.encode("2019-12-02 11:44:31","UTF-8")+"&"+
+                        URLEncoder.encode("do","UTF-8")+"="+URLEncoder.encode("2019-12-02 16:44:31","UTF-8");
 
                 bufferedWriter.write(data);
                 bufferedWriter.flush();
@@ -100,46 +116,58 @@ public class HttpHandler extends AsyncTask<String,Void,String> {
         super.onProgressUpdate(values);
     }
     @Override
-    protected void onPostExecute(String jsonStr) {
-        Log.e(TAG, "Response from url: " + jsonStr);
-        if (jsonStr != null) {
-            try {
-                JSONObject jsonObj = new JSONObject(jsonStr);
-
-                // Getting JSON Array node
-                JSONArray contacts = jsonObj.getJSONArray("");
-
-                // looping through All Contacts
-                for (int i = 0; i < contacts.length(); i++) {
-                    JSONObject c = contacts.getJSONObject(i);
-                    String id = c.getString("id");
-                    String teplota = c.getString("teplota");
-                    String vlhkost = c.getString("vlhkost");
-                    String cas = c.getString("cas");
-
-                    // tmp hash map for single contact
-                    HashMap<String, String> contact = new HashMap<>();
-
-                    // adding each child node to HashMap key => value
-                    contact.put("id", id);
-                    contact.put("teplota", teplota);
-                    contact.put("vlhkost", vlhkost);
-                    contact.put("cas", cas);
-
-                    // adding contact to contact list
-                    contactList.add(contact);
-                }
-            } catch (final JSONException e) {
-                Log.e(TAG, "Json parsing error: " + e.getMessage());
-
-            }
-
-        } else {
-            Log.e(TAG, "Couldn't get json from server.");
+    protected void onPostExecute(String data) {
+        Log.e(TAG, "Response from url: " + data);
+        ArrayList<Entry>yValues=new ArrayList<>();
+        String []pole=data.split(";");
+        int velikost=pole.length;
+        String[] casy=new String[velikost];
+        for(int i=0;i<velikost;i++){
+            String[] housky=(pole[i]).split(",");
+            /*Hodnota hodnotisk=new Hodnota(housky[0],housky[1],housky[2]);*/
+            casy[i]=housky[2];
+            yValues.add(new Entry(i,(int)Double.parseDouble(housky[1])));
         }
-        ListAdapter adapter = new SimpleAdapter(ctx, contactList,
-                R.layout.list_item, new String[]{ "teplota","vlhkost"},
+        for (String radek:pole) {
+
+        }
+        Graf.setDragEnabled(true);
+        Graf.setScaleEnabled(false);
+
+
+        LineDataSet set1=new LineDataSet(yValues,"Dtata set 1");
+        set1.setFillAlpha(110);
+
+        set1.setColor(Color.RED);
+        set1.setLineWidth(3f);
+
+        ArrayList<ILineDataSet>dataSets=new ArrayList<>();
+        dataSets.add(set1);
+        LineData datovaLajna=new LineData(dataSets);
+        Graf.setData(datovaLajna);
+        //XAxis osaX=Graf.getXAxis();
+        /*osaX.setValueFormatter(new FormatProOsu(casy));*/
+
+
+        // adding contact to contact list
+
+       /* ListAdapter adapter = new SimpleAdapter(ctx, contactList,
+                R.layout.list_item, new String[]{ "teplota","cas"},
                 new int[]{R.id.email, R.id.mobile});
-        lv.setAdapter(adapter);
+        lv.setAdapter(adapter);*/
     }
+    /*public class FormatProOsu implements IndexAxisValueFormatter{
+        private String[] pole;
+        public FormatProOsu(String[] pole){
+            this.pole=pole;
+        }
+
+        @Override
+        public String getFormattedValue(float value) {
+            return pole[(int)value];
+        }
+
+
+    }*/
+
 }
