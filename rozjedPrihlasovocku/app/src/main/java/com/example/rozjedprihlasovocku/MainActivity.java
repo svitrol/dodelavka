@@ -4,11 +4,14 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
@@ -22,16 +25,28 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+
+import org.checkerframework.checker.nullness.compatqual.NullableDecl;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
@@ -40,11 +55,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,dialogNoveMistnosti.ExampleDialogListener{
-    List<LinearLayout> radky=new ArrayList<>();
-    LinearLayout hlavniPlocha;
+        implements NavigationView.OnNavigationItemSelectedListener, dialogNoveMistnosti.ExampleDialogListener{
     private static final int IMAGE_PICK_CODE = 1000;
     private static final int PERMISSION_CODE = 1001;
+    GridView gridView;
+    List<obrazZmistnosti> mistnustky=new ArrayList<>();
+    Uzivatel Pepan=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,75 +77,91 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-        hlavniPlocha=findViewById(R.id.hlavniPlocha);
+        gridView = findViewById(R.id.gridview);
+        mistnustky.add(new obrazZmistnosti(Uri.parse("android.resource://com.example.rozjedprihlasovocku/" + android.R.drawable.ic_input_add),Uri.parse("android.resource://com.example.rozjedprihlasovocku/" + android.R.drawable.ic_input_add),"Add"));
+
+
         Intent sCimPrisel=getIntent();
-        Uzivatel Pepan=(Uzivatel) sCimPrisel.getSerializableExtra("Uzivatelos");
+        Pepan=(Uzivatel) sCimPrisel.getSerializableExtra("Uzivatelos");
         if(Pepan!=null){
-            /*LinearLayout neco=findViewById(R.id.hlavicka);
-            TextView jmenovka=neco.findViewById(R.id.jmenoPrijmeni);
-            TextView emailovka=neco.findViewById(R.id.emailovyOkno);
-            jmenovka.setText(Pepan.getJmeno()+" "+Pepan.getPrijmeni());
-            emailovka.setText(Pepan.getEmail());*/
-
-
             if(Pepan.getMistnosti()!=null){
-                String[] mistnosti=Pepan.getMistnosti().split(":");
-                int i=0;
-                for(;i<mistnosti.length;i++){
-                    if(i%2==0){
-                        LinearLayout novyRadek=new LinearLayout(MainActivity.this);
-                        novyRadek.setOrientation(LinearLayout.HORIZONTAL);
-                        hlavniPlocha.addView(novyRadek);
-                        radky.add(novyRadek);
-                    }
-                    LayoutInflater inflater= (LayoutInflater) this.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-                    View bunkaMistonsti=inflater.inflate(R.layout.bunka_mistnosti,null);
-                    TextView napis= bunkaMistonsti.findViewById(R.id.nazevMistnosti);
-                    napis.setText(mistnosti[i]);
-                    radky.get(radky.size()-1).addView(bunkaMistonsti);
+                String znova="";
+                final File[] files = getFilesDir().listFiles();
+                for(int i=0;i<files.length;i++){
+                    String prvni=files[i].getName().split("\\.")[0];
+                    if(prvni.equals(""))files[i].delete();
+                    else znova+=prvni+":";
                 }
-                if(i%2==0){
-                    LinearLayout novyRadek=new LinearLayout(MainActivity.this);
-                    novyRadek.setOrientation(LinearLayout.HORIZONTAL);
-                    hlavniPlocha.addView(novyRadek);
-                    radky.add(novyRadek);
+                znova=znova.substring(0,znova.length()-1);
+                Pepan.setMistnosti(znova);
+                final String[] mistnosti=Pepan.getMistnosti().split(":");
+
+
+                for(int i=0;i<mistnosti.length;i++){
+                    int icko=0;
+                    for(;icko<files.length;icko++){
+                        String prvnicast=files[icko].getName().split("\\.")[0];
+                        if(prvnicast.equals(mistnosti[i])){
+                            Toast.makeText(this,"jo našel jsem aspoň jednu shodu",Toast.LENGTH_LONG).show();
+                            break;
+                        }
+
+                    }
+
+                    mistnustky.add(0,new obrazZmistnosti(Uri.fromFile(files[icko]),Uri.fromFile(files[icko]),mistnosti[i]));
                 }
-                LayoutInflater inflater= (LayoutInflater) this.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-                View bunkaMistonsti=inflater.inflate(R.layout.bunka_mistnosti,null);
-                bunkaMistonsti.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        openDialog();
-                    }
-                });
-                radky.get(radky.size()-1).addView(bunkaMistonsti);
-            }
-            else{
-                LinearLayout novyRadek=new LinearLayout(MainActivity.this);
-                novyRadek.setOrientation(LinearLayout.HORIZONTAL);
-                hlavniPlocha.addView(novyRadek);
-                radky.add(novyRadek);
-                LayoutInflater inflater= (LayoutInflater) this.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-                View bunkaMistonsti=inflater.inflate(R.layout.bunka_mistnosti,null);
-                bunkaMistonsti.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        openDialog();
-                    }
-                });
-                radky.get(radky.size()-1).addView(bunkaMistonsti);
             }
 
         }
+        else{
+            Intent intent=new Intent(this,login.class);
+            startActivity(intent);
+            finish();
+        }
+        CustomAdapter customAdapter = new CustomAdapter();
+        gridView.setAdapter(customAdapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                Toast.makeText(getApplicationContext(),fruitNames[i],Toast.LENGTH_LONG).show();
+                if(i==mistnustky.size()-1){
+                    openDialog();
+
+                }
+                else{
+                    Intent intent = new Intent(getApplicationContext(),Mistnost.class);
+                    intent.putExtra("obrazek",mistnustky.get(i).odkazNaObraz);
+                    intent.putExtra("nazve",mistnustky.get(i).nazevMistnosti);
+                    intent.putExtra("Uzivatelos",getIntent().getSerializableExtra("Uzivatelos"));
+                    startActivity(intent);
+                }
+
+
+            }
+        });
     }
     public void openDialog() {
         dialogNoveMistnosti exampleDialog = new dialogNoveMistnosti();
         exampleDialog.show(getSupportFragmentManager(), "example dialog");
     }
-    String ElMistnostVamanos;
     @Override
-    public void applyTexts(String jmenoMistnosti) {
-        ElMistnostVamanos=jmenoMistnosti;
+    protected void onStop() {
+        super.onStop();
+        String AktualniMistnosti="";
+        for(int i=0;i<mistnustky.size()-1;i++){
+            AktualniMistnosti+=mistnustky.get(i).nazevMistnosti+":";
+        }
+        AktualniMistnosti=AktualniMistnosti.substring(0,AktualniMistnosti.length()-1);
+        if(!AktualniMistnosti.equals(Pepan.getMistnosti())){
+            Pepan.setMistnosti(AktualniMistnosti);
+            Pepan.updateTask(this);
+        }
+
+    }
+    String posledniCeskyNazve="";
+    @Override
+    public void applyTexts(String nezevNoveMistnosti) {
+        posledniCeskyNazve=nezevNoveMistnosti;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_DENIED){
@@ -147,8 +179,6 @@ public class MainActivity extends AppCompatActivity
             //system os is less then marshmallow
             pickImageFromGallery();
         }
-
-
     }
     private void pickImageFromGallery() {
         //intent to pick image
@@ -156,6 +186,8 @@ public class MainActivity extends AppCompatActivity
         intent.setType("image/*");
         startActivityForResult(intent, IMAGE_PICK_CODE);
     }
+
+
     //handle result of runtime permission
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -173,46 +205,158 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+    private void copyFileUsingStream(File source, File dest) throws IOException {
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = new FileInputStream(source);
+            os = new FileOutputStream(dest);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
+            }
+        } finally {
+            is.close();
+            os.close();
+        }
+    }
 
-    //handle result of picked image
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == IMAGE_PICK_CODE){
+            Uri uri = data.getData();
             //set image to image view
-            Uri cesta=data.getData();
-            File obrazislav=new File(cesta.getPath());
-            File novyObraz=new File(getDataDir(),"moje.jpg");
+            mistnustky.add(0,new obrazZmistnosti(uri,uri,posledniCeskyNazve));
+            ((CustomAdapter)gridView.getAdapter()).Aktualizovat();
+            String path = uri.getPath();//getRealPathFromURI(this,uri);
+            String name = posledniCeskyNazve+".jpg";
+            File novy=new File(getFilesDir(),name);
+            File stary=new File(uri.getPath());
+
+
             try {
-                copyFile(obrazislav,novyObraz);
-                /*LayoutInflater inflater= (LayoutInflater) this.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-                View bunkaMistonsti=inflater.inflate(R.layout.bunka_mistnosti,null);
-                TextView napis= bunkaMistonsti.findViewById(R.id.nazevMistnosti);
-                ImageView ramecek=bunkaMistonsti.findViewById(R.id.thumbnail);
-                ramecek.setImageURI(Uri.fromFile(novyObraz));
-                napis.setText(ElMistnostVamanos);
-                radky.get(radky.size()-1).addView(bunkaMistonsti);*/
+                copyFileUsingStream(stary,novy);
+                //insertInPrivateStorage(name,path);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(MainActivity.this,"ups something went wrong",Toast.LENGTH_LONG).show();
             }
         }
     }
-    public static void copyFile(File src, File dst) throws IOException
-    {
-        FileChannel inChannel = new FileInputStream(src).getChannel();
-        FileChannel outChannel = new FileOutputStream(dst).getChannel();
-        try
-        {
-            inChannel.transferTo(0, inChannel.size(), outChannel);
-        }
-        finally
-        {
-            if (inChannel != null)
-                inChannel.close();
-            if (outChannel != null)
-                outChannel.close();
+    private void insertInPrivateStorage(String name, String path) throws IOException {
+        FileOutputStream fos  = openFileOutput(name,MODE_APPEND);
+
+        File file = new File(path);
+
+        byte[] bytes = getBytesFromFile(file);
+
+        fos.write(bytes);
+        fos.close();
+
+        Toast.makeText(getApplicationContext(),"File saved in :"+ getFilesDir() + "/"+name,Toast.LENGTH_SHORT).show();
+    }
+
+    private byte[] getBytesFromFile(File file) throws IOException {
+
+        byte[] data = readFileToByteArray(file);
+        return data;
+
+    }
+    public static byte[] readFileToByteArray(File file) {
+        byte[] fileBytes = new byte[(int) file.length()];
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            int offset = 0;
+            int count = (int) file.length();
+            int temp = 0;
+
+            while ((temp = fis.read(fileBytes, offset, count)) > 0) {
+                offset += temp;
+                count -= temp;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return fileBytes;
         }
     }
+
+    private String getFileName(Uri uri)
+    {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
+    private class CustomAdapter extends BaseAdapter {
+        @Override
+        public int getCount() {
+            return mistnustky.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return 0;
+        }
+
+        public void Aktualizovat()
+        {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            View view1 = getLayoutInflater().inflate(R.layout.row_data,null);
+            //getting view in row_data
+            TextView name = view1.findViewById(R.id.fruits);
+            ImageView image = view1.findViewById(R.id.images);
+
+            name.setText(mistnustky.get(i).nazevMistnosti);
+            image.setImageURI(mistnustky.get(i).odkazNaObraz);
+            return view1;
+
+
+
+        }
+    }
+
 
 
     @Override

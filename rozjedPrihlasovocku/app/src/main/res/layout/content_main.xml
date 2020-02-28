@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context="MainActivity">
+
+
+<GridView
+    android:id="@+id/gridview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".MainActivity"
-    tools:showIn="@layout/app_bar_main">
+    android:gravity="center"
+    android:columnWidth="100dp"
+    android:numColumns="2"
+    android:verticalSpacing="24dp"
+    android:horizontalSpacing="10dp"
+    android:stretchMode="spacingWidthUniform"
+    />
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:id="@+id/hlavniPlocha"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>
