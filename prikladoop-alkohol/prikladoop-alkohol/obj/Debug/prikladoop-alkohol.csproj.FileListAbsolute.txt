@@ -1,0 +1,11 @@
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop-alkohol.csprojAssemblyReference.cache
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop_alkohol.Form1.resources
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop_alkohol.Properties.Resources.resources
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop-alkohol.csproj.GenerateResource.cache
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop-alkohol.csproj.CoreCompileInputs.cache
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\bin\Debug\prikladoop-alkohol.exe.config
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\bin\Debug\prikladoop-alkohol.exe
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\bin\Debug\prikladoop-alkohol.pdb
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop-alkohol.exe
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop-alkohol.pdb
+C:\Users\svita\source\repos\prikladoop-alkohol\prikladoop-alkohol\obj\Debug\prikladoop_alkohol.NovyAlkoholDialog.resources

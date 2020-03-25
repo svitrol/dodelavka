@@ -1,0 +1,12 @@
+pivo:Kozel:4,6
+pivo:Kozel:5
+pivo:Bernard:4,6
+pivo:Budvar:5
+pivo:Rajče:8,3
+pivo:KA:1
+whisky:as:4
+whisky:JACK:52,3
+čaj:Tatranský:72
+Rum:Tuzemák:15
+shampano:sd:12
+monitor:as:14
