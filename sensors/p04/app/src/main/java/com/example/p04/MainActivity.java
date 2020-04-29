@@ -8,6 +8,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.View;
@@ -19,7 +21,7 @@ import java.util.EventListener;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
     Sensor gyroskopista;
     SensorManager master;
     TextView label,body;
@@ -31,9 +33,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         String text="";
-
-
-
 
         float chtenaPozicex=px-9-sensorEvent.values[0]*1000;
         float chetnaPoziceY=py-22-sensorEvent.values[1]*1000;
@@ -63,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         master=(SensorManager)getSystemService(SENSOR_SERVICE);
@@ -103,6 +102,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
+    }
+
     class Interval{
         Float start,konec;
 
